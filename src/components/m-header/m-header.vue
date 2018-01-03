@@ -16,6 +16,7 @@
 <style scoped lang="stylus" rel="stylesheet/stylus">
   @import '~common/stylus/variable'
   @import '~common/stylus/mixin'
+
   .m-header
     position: relative
     height: 44px

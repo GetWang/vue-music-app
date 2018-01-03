@@ -7,6 +7,7 @@ const baseWebpackConfig = require('./webpack.base.conf')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
+const axios = require('axios')    // 加载axios模块
 
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
@@ -20,6 +21,24 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 
   // these devServer options should be customized in /config/index.js
   devServer: {
+    before(app) {
+      app.get('/api/getDiscList', function (req, res) {   // 为推荐页面的歌单数据接口作路由
+        const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
+        axios.get(url, {                // 通过axios向目标服务器发送HTTP请求，获取歌单数据
+          headers: {
+            referer: 'https://c.y.qq.com/',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {   // response是从目标服务器返回的带有HTTP响应头部数据和实际请求的歌单数据的一个对象
+          res.json(response.data)
+          // response.data是实际请求的歌单数据的一个对象，调用res.json()是将response.data转化成JSON数据格式，res是
+          // 要返回给浏览器的响应数据，是一个带有HTTP响应头部数据和实际请求的歌单数据的对象
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
+    },
     clientLogLevel: 'warning',
     historyApiFallback: true,
     hot: true,
