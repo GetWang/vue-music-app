@@ -31,9 +31,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           },
           params: req.query
         }).then((response) => {   // response是从目标服务器返回的带有HTTP响应头部数据和实际请求的歌单数据的一个对象
+          /* response.data是实际请求的歌单数据的一个对象，调用res.json()是将response.data转化成JSON数据格式，
+          res是要返回给浏览器的响应数据，是一个带有HTTP响应头部数据和实际请求的歌单数据的对象 */
           res.json(response.data)
-          // response.data是实际请求的歌单数据的一个对象，调用res.json()是将response.data转化成JSON数据格式，res是
-          // 要返回给浏览器的响应数据，是一个带有HTTP响应头部数据和实际请求的歌单数据的对象
         }).catch((e) => {
           console.log(e)
         })
