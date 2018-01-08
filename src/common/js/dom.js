@@ -12,6 +12,7 @@ export function addClass(el, className) {
   el.className = newClass.join(' ')
 }
 
+/* 获取、设置元素的“data-”属性 */
 export function getData(el, name, val) {
   const prefix = 'data-'
   name = prefix + name
@@ -20,4 +21,33 @@ export function getData(el, name, val) {
   } else {
     return el.getAttribute(name)
   }
+}
+
+let elementStyle = document.createElement('div').style
+/* 进行浏览器能力检测，得出浏览器供应商 */
+let vendor = (() => {
+  let transformNames = {
+    webkit: 'webkitTransform',
+    Moz: 'MozTransform',
+    O: 'OTransform',
+    ms: 'msTransform',
+    standard: 'transform'
+  }
+  for (let key in transformNames) {
+    if (elementStyle[transformNames[key]] !== undefined) {
+      return key
+    }
+  }
+  return false
+})()
+
+/* 对CSS属性名加上相应的浏览器前缀 */
+export function prefixStyle(style) {
+  if (vendor === false) {
+    return false
+  }
+  if (vendor === 'standard') {
+    return style
+  }
+  return vendor + style.charAt(0).toUpperCase() + style.substr(1)
 }
