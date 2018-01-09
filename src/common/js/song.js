@@ -1,5 +1,12 @@
+import { getVKey } from 'api/song'
+import { getUid } from './uid'
+import { ERR_OK } from 'api/config'
+
+/* 保存每一个歌曲id对应的歌曲url */
+let urlMap = {}
+
 export default class Song {
-  constructor({ id, name, singer, mid, album, duration, image, url }) {
+  constructor({ id, name, singer, mid, album, duration, image }) {
     this.id = id
     this.name = name
     this.singer = singer
@@ -7,7 +14,27 @@ export default class Song {
     this.album = album
     this.duration = duration
     this.image = image
-    this.url = url
+    // 暂时还不知道filename属性是什么，不过应该和获取歌曲需要验证有关
+    this.filename = `C400${this.mid}.m4a`
+    /* 确保每首歌曲的id只对应一个url，同一个id的歌曲不再生成新的url */
+    if (urlMap[this.id]) {
+      this.url = urlMap[this.id]
+    } else {
+      this._genUrl()
+    }
+  }
+  /* 根据歌曲实例的mid、filename生成歌曲的url */
+  _genUrl() {
+    if (this.url) {
+      return
+    }
+    getVKey(this.mid, this.filename).then((res) => {
+      if (res.code === ERR_OK) {
+        const vkey = res.data.items[0].vkey
+        this.url = `http://dl.stream.qqmusic.qq.com/${this.filename}?vkey=${vkey}&guid=${getUid()}&uin=0&fromtag=66`
+        urlMap[this.id] = this.url
+      }
+    })
   }
 }
 
@@ -20,8 +47,7 @@ export function createSong(musicData) {
     mid: musicData.songmid,
     album: musicData.albumname,
     duration: musicData.interval,
-    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
-    url: `http://ws.stream.qqmusic.qq.com/${musicData.songid}.m4a?fromtag=46`
+    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`
   })
 }
 

@@ -19,7 +19,7 @@
         <div class="middle">
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd">
+              <div :class="cdCls" class="cd">
                 <img class="image" :src="currentSong.image">
               </div>
             </div>
@@ -30,14 +30,14 @@
             <div class="icon i-left">
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon i-left">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disableCls">
+              <i @click="prev" class="icon-prev"></i>
             </div>
-            <div class="icon i-center">
-              <i class="icon-play"></i>
+            <div class="icon i-center" :class="disableCls">
+              <i @click="togglePlaying" :class="playIcon"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disableCls">
+              <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon-not-favorite"></i>
@@ -49,35 +49,77 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img :src="currentSong.image" width="40" height="40">
+          <img :class="cdCls" :src="currentSong.image" width="40" height="40">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i class="icon-play-mini"></i>
+          <i @click.stop="togglePlaying" :class="playMiniIcon"></i>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-
+    <audio ref="audio" :src="currentSong.url"
+           @canplay="ready" @error="error"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import animations from 'create-keyframe-animation'
   import { mapGetters, mapMutations } from 'vuex'
+  import { prefixStyle } from 'common/js/dom'
+
+  const transform = prefixStyle('transform')
 
   export default {
+    data() {
+      return {
+        songReady: false
+      }
+    },
     computed: {
+      /* 设置全屏播放器播放、暂停的图标 */
+      playIcon() {
+        return this.playing ? 'icon-pause' : 'icon-play'
+      },
+      /* 设置mini播放器播放、暂停的图标 */
+      playMiniIcon() {
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+      },
+      /* 控制全屏播放器和mini播放器的歌手图片的旋转 */
+      cdCls() {
+        return this.playing ? 'play' : 'play pause'
+      },
+      /* 若歌曲未准备好，则将播放、上一首、下一首按钮的图标颜色设置为灰色，以在视觉上体现歌曲未准备好 */
+      disableCls() {
+        return this.songReady ? '' : 'disable'
+      },
       ...mapGetters([
         'fullScreen',
         'playlist',
-        'currentSong'
+        'currentSong',
+        'playing',
+        'currentIndex'
       ])
+    },
+    watch: {
+      /* 歌曲切换后，自动播放 */
+      currentSong() {
+        this.$nextTick(() => {
+          this.$refs.audio.play()
+        })
+      },
+      /* 播放状态发生变化后，控制歌曲的播放、暂停 */
+      playing(newPlaying) {
+        const audio = this.$refs.audio
+        this.$nextTick(() => {
+          newPlaying ? audio.play() : audio.pause()
+        })
+      }
     },
     methods: {
       /* 切换至mini播放器 */
@@ -88,8 +130,56 @@
       open() {
         this.setFullScreen(true)
       },
+      /* 切换播放、暂停状态 */
+      togglePlaying() {
+        this.setPlayingState(!this.playing)
+      },
+      /* 播放下一首歌 */
+      next() {
+        // 如果当前歌曲还没准备好，不允许切换下一首
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex + 1
+        if (index === this.playlist.length) {
+          index = 0
+        }
+        this.setCurrentIndex(index)
+        // 若歌曲暂停播放时切换下一首，需修改播放状态为播放中
+        if (!this.playing) {
+          this.setPlayingState(true)
+        }
+        this.songReady = false
+      },
+      /* 播放上一首歌 */
+      prev() {
+        // 如果当前歌曲还没准备好，不允许切换上一首
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex - 1
+        if (index === -1) {
+          index = this.playlist.length - 1
+        }
+        this.setCurrentIndex(index)
+        // 若歌曲暂停播放时切换上一首，需修改播放状态为播放中
+        if (!this.playing) {
+          this.setPlayingState(true)
+        }
+        this.songReady = false
+      },
+      /* 歌曲准备好时，将songReady标志位设为true */
+      ready() {
+        this.songReady = true
+      },
+      /* 当请求的歌曲url错误或网络异常，也将songReady标志位设为true，不然就无法切换上、下首歌曲 */
+      error() {
+        this.songReady = true
+      },
       ...mapMutations({
-        setFullScreen: 'SET_FULL_SCREEN'
+        setFullScreen: 'SET_FULL_SCREEN',
+        setPlayingState: 'SET_PLAYING_STATE',
+        setCurrentIndex: 'SET_CURRENT_INDEX'
       }),
       /* 以下是使用Vue过渡动画提供的JavaScript钩子写出的函数，
        * enter钩子函数定义并运行进入时cdWrapper元素的动画，并触发after-enter钩子 */
@@ -99,15 +189,15 @@
         let animation = {
           /* 0%时，mini播放器歌手图片中心点参考全屏播放器歌手图片中心点的transform */
           0: {
-            transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`
+            [transform]: `translate3d(${x}px, ${y}px, 0) scale(${scale})`
           },
           /* 60%时，mini播放器歌手图片中心点参考全屏播放器歌手图片中心点的transform */
           60: {
-            transform: `translate3d(0, 0, 0) scale(1.1)`
+            [transform]: `translate3d(0, 0, 0) scale(1.1)`
           },
           /* 100%时，mini播放器歌手图片中心点参考全屏播放器歌手图片中心点的transform */
           100: {
-            transform: `translate3d(0, 0, 0) scale(1)`
+            [transform]: `translate3d(0, 0, 0) scale(1)`
           }
         }
         /* 使用三方JS动画库注册一个动画 */
@@ -131,13 +221,13 @@
       leave(el, done) {
         this.$refs.cdWrapper.style.transition = `all 0.4s`
         const { x, y, scale } = this._getPosAndScale()
-        this.$refs.cdWrapper.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`
+        this.$refs.cdWrapper.style[transform] = `translate3d(${x}px, ${y}px, 0) scale(${scale})`
         this.$refs.cdWrapper.addEventListener('transitionend', done)
       },
       /* afterEnter钩子函数清除cdWrapper元素上设置的行内过渡样式 */
       afterLeave() {
         this.$refs.cdWrapper.style.transition = ''
-        this.$refs.cdWrapper.style.transform = ''
+        this.$refs.cdWrapper.style[transform] = ''
       },
       /* 获取全屏播放器和mini播放器初始X轴和Y轴的偏移量（以全屏播放器歌手图片的中心点为参考点）、
        * 大小比例scale（参考全屏播放器歌手图片的大小） */
@@ -248,6 +338,10 @@
               box-sizing: border-box
               border: 10px solid rgba(255, 255, 255, 0.1)
               border-radius: 50%
+              &.play
+                animation: rotate 20s linear infinite
+              &.pause
+                animation-play-state: paused
               .image
                 position: absolute
                 top: 0
@@ -265,6 +359,8 @@
           .icon
             flex: 1
             color: $color-theme
+            &.disable
+              color: $color-theme-d
             i
               font-size: 30px
           .i-left
@@ -296,6 +392,10 @@
         padding: 0 10px 0 20px
         img
           border-radius: 50%
+          &.play
+            animation: rotate 20s linear infinite
+          &.pause
+            animation-play-state: paused
       .text
         display: flex
         flex: 1
@@ -316,7 +416,12 @@
         flex: 0 0 30px
         width: 30px
         padding: 0 10px
-        .icon-play-mini, .icon-playlist
+        .icon-play-mini, .icon-pause-mini, .icon-playlist
           font-size: 30px
           color: $color-theme-d
+  @keyframes rotate
+    0%
+      transform: rotate(0)
+    100%
+      transform: rotate(360deg)
 </style>
