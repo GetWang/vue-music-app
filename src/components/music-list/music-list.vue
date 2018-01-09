@@ -8,7 +8,7 @@
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="filter" ref="filter"></div>
       <div class="play-wrapper">
-        <div class="playBtn" v-show="songs.length" ref="playBtn">
+        <div class="playBtn" v-show="songs.length > 0" ref="playBtn">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -20,7 +20,7 @@
             :listen-scroll="listenScroll"
             @scroll="scroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -34,6 +34,7 @@
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
   import { prefixStyle } from 'common/js/dom'
+  import { mapActions } from 'vuex'
 
   /* 保留的高度，也即歌手详情页顶部标题的高度 */
   const RESERVED_HEIGHT = 30
@@ -83,7 +84,16 @@
       },
       back() {
         this.$router.back()
-      }
+      },
+      selectItem(item, index) {
+        this.selectPlay({
+          list: this.songs,
+          index: index
+        })
+      },
+      ...mapActions([
+        'selectPlay'
+      ])
     },
     watch: {
       /* 将添加的背景层往Y轴方向移动 */
