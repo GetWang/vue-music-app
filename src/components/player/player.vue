@@ -26,6 +26,13 @@
           </div>
         </div>
         <div class="bottom">
+          <div class="progress-wrapper">
+            <span class="time time-l">{{ formatTime(currentTime) }}</span>
+            <div class="progress-bar-wrapper">
+              <progress-bar :percent="percent" @percentChange="onProgressChange"></progress-bar>
+            </div>
+            <span class="time time-r">{{ formatTime(currentSong.duration) }}</span>
+          </div>
           <div class="operators">
             <div class="icon i-left">
               <i class="icon-sequence"></i>
@@ -56,19 +63,23 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="playMiniIcon"></i>
+          <progress-circle :radius="radius" :percent="percent">
+            <i @click.stop="togglePlaying" :class="playMiniIcon" class="icon-mini"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-    <audio ref="audio" :src="currentSong.url"
-           @canplay="ready" @error="error"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready"
+           @error="error" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import ProgressBar from 'base/progress-bar/progress-bar'
+  import ProgressCircle from 'base/progress-circle/progress-circle'
   import animations from 'create-keyframe-animation'
   import { mapGetters, mapMutations } from 'vuex'
   import { prefixStyle } from 'common/js/dom'
@@ -78,7 +89,9 @@
   export default {
     data() {
       return {
-        songReady: false
+        songReady: false,     // 当前歌曲是否准备好的标志位
+        currentTime: 0,       // 当前歌曲播放的时间戳（未格式化）
+        radius: 32            // 圆形进度条组件圆的半径
       }
     },
     computed: {
@@ -97,6 +110,10 @@
       /* 若歌曲未准备好，则将播放、上一首、下一首按钮的图标颜色设置为灰色，以在视觉上体现歌曲未准备好 */
       disableCls() {
         return this.songReady ? '' : 'disable'
+      },
+      /* 计算歌曲当前播放时间点占歌曲时长的百分比 */
+      percent() {
+        return this.currentTime / this.currentSong.duration
       },
       ...mapGetters([
         'fullScreen',
@@ -176,6 +193,25 @@
       error() {
         this.songReady = true
       },
+      /* 更新歌曲当前播放的时间点 */
+      updateTime(e) {
+        this.currentTime = e.target.currentTime
+      },
+      onProgressChange(percent) {
+        const currentTime = this.currentSong.duration * percent
+        this.$refs.audio.currentTime = currentTime
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+      },
+      /* 格式化获取到的歌曲当前播放时间戳，显示为我们想要的时间格式 */
+      formatTime(interval) {
+        // 下面这条语句将interval向下取整，相当于Math.floor(interval)
+        interval = interval | 0
+        const minute = interval / 60 | 0
+        const second = this._padTime(interval % 60)
+        return `${minute}:${second}`
+      },
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN',
         setPlayingState: 'SET_PLAYING_STATE',
@@ -247,7 +283,20 @@
           y,
           scale
         }
+      },
+      /* 为当前播放的时间点的秒部分做补零操作，默认秒部分为两位 */
+      _padTime(num, n = 2) {
+        let len = num.toString().length
+        while (len < 2) {
+          num = '0' + num
+          len++
+        }
+        return num
       }
+    },
+    components: {
+      ProgressBar,
+      ProgressCircle
     }
   }
 </script>
@@ -353,6 +402,24 @@
         position: absolute
         bottom: 50px
         width: 100%
+        .progress-wrapper
+          display: flex
+          align-items: center
+          width: 80%
+          margin: 0 auto
+          padding: 10px 0
+          .time
+            flex: 0 0 30px
+            width: 30px
+            font-size: $font-size-small
+            line-height: 30px
+            color: $color-text
+            &.time-l
+              text-align: left
+            &.time-r
+              text-align: right
+          .progress-bar-wrapper
+            flex: 1
         .operators
           display: flex
           align-items: center
@@ -418,7 +485,13 @@
         padding: 0 10px
         .icon-play-mini, .icon-pause-mini, .icon-playlist
           font-size: 30px
+          // 因为下面这个样式，即字体颜色有一些透明的效果，使得圆形进度条的进度走动能够被看到
           color: $color-theme-d
+        .icon-mini
+          position: absolute
+          top: 0
+          left: 0
+          font-size: 32px
   @keyframes rotate
     0%
       transform: rotate(0)
