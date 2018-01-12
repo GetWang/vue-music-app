@@ -8,7 +8,7 @@
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="filter" ref="filter"></div>
       <div class="play-wrapper">
-        <div class="playBtn" v-show="songs.length > 0" ref="playBtn">
+        <div class="playBtn" v-show="songs.length > 0" @click="random" ref="playBtn">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -35,6 +35,7 @@
   import Loading from 'base/loading/loading'
   import { prefixStyle } from 'common/js/dom'
   import { mapActions } from 'vuex'
+  import { playlistMixin } from 'common/js/mixin'
 
   /* 保留的高度，也即歌手详情页顶部标题的高度 */
   const RESERVED_HEIGHT = 30
@@ -77,22 +78,38 @@
         return `background-image: url(${this.bgImage})`
       }
     },
+    mixins: [playlistMixin],
     methods: {
       /* 保存当前滚动位置的Y轴方向的坐标 */
       scroll(pos) {
         this.scrollY = pos.y
       },
+      /* 从歌手详情页返回到歌手页面 */
       back() {
         this.$router.back()
       },
+      /* 选择歌曲列表中的某一首歌曲进行播放 */
       selectItem(item, index) {
         this.selectPlay({
           list: this.songs,
           index: index
         })
       },
+      /* 这里使用mixin根据播放器的播放列表解决音乐列表底部与mini播放器不适配的问题 */
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.list.$el.style.bottom = bottom
+        this.$refs.list.refresh()
+      },
+      /* 随机播放歌曲列表中的歌曲 */
+      random() {
+        this.randomPlay({
+          list: this.songs
+        })
+      },
       ...mapActions([
-        'selectPlay'
+        'selectPlay',
+        'randomPlay'
       ])
     },
     watch: {

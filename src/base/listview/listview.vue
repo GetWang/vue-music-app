@@ -134,6 +134,9 @@
       scroll(pos) {
         this.scrollY = pos.y
       },
+      refresh() {
+        this.$refs.listview.refresh()
+      },
       /* 计算每个歌手分组的高度 */
       _calculateHeight() {
         this.listHeight = []

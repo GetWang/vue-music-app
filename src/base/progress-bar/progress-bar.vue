@@ -66,7 +66,11 @@
       },
       /* 点击进度条的某个位置时，改变进度及拖拽按钮的位置，也向父组件派发一个播放百分比发生变化的事件 */
       progressClick(e) {
-        const offsetWidth = e.offsetX   // e.offsetX表示进度条点击位置相对自身的偏移量
+        /* const offsetWidth = e.offsetX   // e.offsetX表示进度条点击位置相对自身的偏移量
+           这里进度条的offsetX获取不对。故我们使用点击按钮时的pageX减去进度条相对于浏览器视口最左
+           边的宽度来得到进度条应有的水平offset。 */
+        const rect = this.$refs.progressBar.getBoundingClientRect()
+        const offsetWidth = e.pageX - rect.left
         this._offset(offsetWidth)
         this._triggerPercent()
       },

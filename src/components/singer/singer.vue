@@ -1,6 +1,6 @@
 <template>
-  <div class="singer">
-    <list-view @select="selectSinger" :data="singerList"></list-view>
+  <div class="singer" ref="singer">
+    <list-view @select="selectSinger" :data="singerList" ref="list"></list-view>
     <router-view></router-view>
   </div>
 </template>
@@ -12,6 +12,7 @@
   import { getSingerList } from 'api/singer'
   import { ERR_OK } from 'api/config'
   import { mapMutations } from 'vuex'
+  import { playlistMixin } from 'common/js/mixin'
 
   const HOT_NAME = '热门'
   const HOT_SINGER_LEN = 10
@@ -25,12 +26,19 @@
     created() {
       this._getSingerList()
     },
+    mixins: [playlistMixin],
     methods: {
       selectSinger(singer) {
         this.$router.push({
           path: `/singer/${singer.id}`
         })
         this.setSinger(singer)
+      },
+      /* 这里使用mixin根据播放器的播放列表解决歌手页面底部与mini播放器不适配的问题 */
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.singer.style.bottom = bottom
+        this.$refs.list.refresh()
       },
       _getSingerList() {
         getSingerList().then((res) => {

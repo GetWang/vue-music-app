@@ -1,5 +1,6 @@
-import { getVKey } from 'api/song'
+import { getLyric, getVKey } from 'api/song'
 import { getUid } from './uid'
+import { Base64 } from 'js-base64'
 import { ERR_OK } from 'api/config'
 
 /* 保存每一个歌曲id对应的歌曲url */
@@ -34,6 +35,23 @@ export default class Song {
         this.url = `http://dl.stream.qqmusic.qq.com/${this.filename}?vkey=${vkey}&guid=${getUid()}&uin=0&fromtag=66`
         urlMap[this.id] = this.url
       }
+    })
+  }
+  getLyric() {
+    /* 因为当store中的currentSong发生变化，就会去请求歌词，
+       所以判断一下当前歌曲是否已经有歌词了，若有，则不再次去请求歌词 */
+    if (this.lyric) {
+      return Promise.resolve(this.lyric)
+    }
+    /* 这里只负责请求数据，如何使用和操作由外部决定 */
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          resolve(Base64.decode(res.lyric))
+        } else {
+          reject(new Error('no lyric'))
+        }
+      })
     })
   }
 }

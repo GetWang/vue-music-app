@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend">
+  <div class="recommend" ref="recommend">
     <scroll ref="scroll" class="recommend-content" :data="discList">
       <div>
         <div v-if="recommends.length" class="slider-wrapper">
@@ -34,11 +34,12 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import { getRecommend, getDiscList } from 'api/recommend'
-  import { ERR_OK } from 'api/config'
   import Slider from 'base/slider/slider'
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
+  import { getRecommend, getDiscList } from 'api/recommend'
+  import { ERR_OK } from 'api/config'
+  import { playlistMixin } from 'common/js/mixin'
 
   export default {
     data() {
@@ -51,7 +52,14 @@
       this._getRecommend()
       this._getDiscList()
     },
+    mixins: [playlistMixin],
     methods: {
+      /* 这里使用mixin根据播放器的播放列表解决推荐页面底部与mini播放器不适配的问题 */
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.recommend.style.bottom = bottom
+        this.$refs.scroll.refresh()
+      },
       _getRecommend() {
         getRecommend().then((res) => {
           if (res.code === ERR_OK) {
