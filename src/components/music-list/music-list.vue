@@ -20,7 +20,7 @@
             :listen-scroll="listenScroll"
             @scroll="scroll">
       <div class="song-list-wrapper">
-        <song-list @select="selectItem" :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs" :rank="rank"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -55,6 +55,11 @@
       title: {
         type: String,
         default: ''
+      },
+      // 设置song-list组件中的歌曲是否要有排行的样式
+      rank: {
+        type: Boolean,
+        default: false
       }
     },
     data() {
