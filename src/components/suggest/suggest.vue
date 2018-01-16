@@ -80,6 +80,10 @@
           return `${item.name}-${item.singer}`
         }
       },
+      /* 刷新scroll组件的高度 */
+      refresh() {
+        this.$refs.suggest.refresh()
+      },
       /* 点击不同的搜索结果，跳转到不同的页面（歌手详情页、播放器页面） */
       selectItem(item) {
         // 点击歌手

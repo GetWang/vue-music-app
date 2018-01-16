@@ -1,7 +1,7 @@
 import * as types from './mutation-types'
 import { playMode } from 'common/js/config'
 import { shuffle } from 'common/js/util'
-import { saveSearch } from 'common/js/cache'
+import { saveSearch, deleteSearch, clearSearch } from 'common/js/cache'
 
 /* 在数组中查找给定歌曲实例的索引 */
 function findIndex(list, song) {
@@ -27,7 +27,7 @@ export const selectPlay = function ({ commit, state }, { list, index }) {
 }
 
 /* 当点击随机播放全部按钮或切换到随机播放模式时，提交多个mutation，将当前播放列表歌曲顺序打乱 */
-export function randomPlay({ commit, state }, { list }) {
+export function randomPlay({ commit }, { list }) {
   commit(types.SET_PLAY_MODE, playMode.random)
   commit(types.SET_SEQUENCE_LIST, list)
   commit(types.SET_PLAYING_STATE, true)
@@ -68,10 +68,12 @@ export function insertSong({ commit, state }, song) {
   let currentSIndex = findIndex(sequenceList, currentSong) + 1
   let fsIndex = findIndex(sequenceList, song)
   sequenceList.splice(currentSIndex, 0, song)
-  if (fsIndex < currentSIndex) {
-    sequenceList.splice(fsIndex, 1)
-  } else {
-    sequenceList.splice(fsIndex + 1, 1)
+  if (fsIndex > -1) {
+    if (fsIndex < currentSIndex) {
+      sequenceList.splice(fsIndex, 1)
+    } else {
+      sequenceList.splice(fsIndex + 1, 1)
+    }
   }
   commit(types.SET_PLAYLIST, playlist)
   commit(types.SET_SEQUENCE_LIST, sequenceList)
@@ -81,6 +83,16 @@ export function insertSong({ commit, state }, song) {
 }
 
 /* 将搜索词添加到搜索历史中，并提交一个修改store中searchHistory的mutation */
-export function saveSearchHistory({ commit, state }, query) {
+export function saveSearchHistory({ commit }, query) {
   commit(types.SET_SEARCH_HISTORY, saveSearch(query))
+}
+
+/* 将某个搜索词从搜索历史中删除，并提交一个修改store中searchHistory的mutation */
+export function deleteSearchHistory({ commit }, query) {
+  commit(types.SET_SEARCH_HISTORY, deleteSearch(query))
+}
+
+/* 将搜索历史清空，并提交一个修改store中searchHistory的mutation */
+export function clearSearchHistory({ commit }) {
+  commit(types.SET_SEARCH_HISTORY, clearSearch())
 }

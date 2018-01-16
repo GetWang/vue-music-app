@@ -1,7 +1,7 @@
 <template>
   <div class="no-result">
     <div class="no-result-icon"></div>
-    <p class="no-result-text"></p>
+    <p class="no-result-text">{{ title }}</p>
   </div>
 </template>
 

@@ -167,9 +167,12 @@
         if (newSong.id === oldSong.id) {
           return
         }
-        /* 当前歌曲发生改变后，若歌词对象存在，就停止它启动的计时，防止歌词播放错乱 */
+        /* 当前歌曲发生改变后，若歌词对象存在，就停止它启动的计时，防止歌词播放错乱，并做一些清空操作 */
         if (this.currentLyric) {
           this.currentLyric.stop()
+          this.currentTime = 0
+          this.playingLyric = ''
+          this.currentLineNum = 0
         }
         this.$nextTick(() => {
           this.$refs.audio.play()
