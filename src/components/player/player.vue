@@ -434,7 +434,7 @@
           name: 'move',
           animation,
           presets: {
-            duration: 4000,
+            duration: 400,
             easing: 'linear'
           }
         })
