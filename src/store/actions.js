@@ -82,6 +82,36 @@ export function insertSong({ commit, state }, song) {
   commit(types.SET_FULL_SCREEN, true)
 }
 
+/* 提交多个mutation，从播放器的播放列表删除一首歌曲。 */
+export function deleteSong({ commit, state }, song) {
+  let playlist = state.playlist.slice()
+  let sequenceList = state.sequenceList.slice()
+  let currentIndex = state.currentIndex
+  let pIndex = findIndex(playlist, song)
+  playlist.splice(pIndex, 1)
+  /* 当要删除的歌曲在当前播放歌曲的前面或要删除的歌曲就是当前
+     播放的歌曲且是列表中的最后一首时，currentIndex减一 */
+  if (currentIndex > pIndex || currentIndex === playlist.length) {
+    currentIndex--
+  }
+  let sIndex = findIndex(sequenceList, song)
+  sequenceList.splice(sIndex, 1)
+  commit(types.SET_PLAYLIST, playlist)
+  commit(types.SET_SEQUENCE_LIST, sequenceList)
+  commit(types.SET_CURRENT_INDEX, currentIndex)
+  // 当播放列表中的歌曲均被删除完时，将播放状态设为暂停，否则设为播放中
+  const playingState = playlist.length > 0
+  commit(types.SET_PLAYING_STATE, playingState)
+}
+
+/* 提交多个mutation，清空播放列表 */
+export function clearSongList({ commit }) {
+  commit(types.SET_PLAYLIST, [])
+  commit(types.SET_SEQUENCE_LIST, [])
+  commit(types.SET_CURRENT_INDEX, -1)
+  commit(types.SET_PLAYING_STATE, false)
+}
+
 /* 将搜索词添加到搜索历史中，并提交一个修改store中searchHistory的mutation */
 export function saveSearchHistory({ commit }, query) {
   commit(types.SET_SEARCH_HISTORY, saveSearch(query))

@@ -86,11 +86,12 @@
             <i @click.stop="togglePlaying" :class="playMiniIcon" class="icon-mini"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlaylist">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <playlist ref="playlist"></playlist>
     <audio ref="audio" :src="currentSong.url" @canplay="ready"
            @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
@@ -100,6 +101,7 @@
   import ProgressBar from 'base/progress-bar/progress-bar'
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import Scroll from 'base/scroll/scroll'
+  import Playlist from 'components/playlist/playlist'
   import animations from 'create-keyframe-animation'
   import Lyric from 'lyric-parser'
   import { mapGetters, mapMutations } from 'vuex'
@@ -163,7 +165,11 @@
     watch: {
       /* 歌曲切换后，自动播放 */
       currentSong(newSong, oldSong) {
-        /* 修复当歌曲暂停播放时，切换到随机播放模式，歌曲开始播放的bug */
+        // 当歌曲列表中没有歌曲时，不做任何操作
+        if (!newSong.id) {
+          return
+        }
+        /* 修复当歌曲暂停播放时，切换到随机播放模式或顺序播放模式，歌曲开始播放的bug */
         if (newSong.id === oldSong.id) {
           return
         }
@@ -188,6 +194,10 @@
       }
     },
     methods: {
+      /* 显示歌曲播放列表 */
+      showPlaylist() {
+        this.$refs.playlist.show()
+      },
       /* 切换至mini播放器 */
       back() {
         this.setFullScreen(false)
@@ -493,7 +503,8 @@
     components: {
       ProgressBar,
       ProgressCircle,
-      Scroll
+      Scroll,
+      Playlist
     }
   }
 </script>
