@@ -104,10 +104,10 @@
   import Playlist from 'components/playlist/playlist'
   import animations from 'create-keyframe-animation'
   import Lyric from 'lyric-parser'
-  import { mapGetters, mapMutations } from 'vuex'
+  import { mapGetters, mapMutations, mapActions } from 'vuex'
   import { prefixStyle } from 'common/js/dom'
   import { playMode } from 'common/js/config'
-  import { shuffle } from 'common/js/util'
+  import { playerMixin } from 'common/js/mixin'
 
   const transform = prefixStyle('transform')
   const transitionDuration = prefixStyle('transitionDuration')
@@ -127,6 +127,8 @@
     created() {
       this.touch = {}         // 在播放器的中部触摸屏幕时存放跟touch相关的数据
     },
+    /* 使用了跟播放模式相关的混合，即和歌曲播放列表组件共用了播放模式相关的逻辑 */
+    mixins: [playerMixin],
     computed: {
       /* 设置全屏播放器播放、暂停的图标 */
       playIcon() {
@@ -135,10 +137,6 @@
       /* 设置mini播放器播放、暂停的图标 */
       playMiniIcon() {
         return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
-      },
-      /* 设置播放模式的的图标 */
-      iconMode() {
-        return this.mode === playMode.sequence ? 'icon-sequence' : (this.mode === playMode.loop ? 'icon-loop' : 'icon-random')
       },
       /* 控制全屏播放器和mini播放器的歌手图片的旋转 */
       cdCls() {
@@ -154,12 +152,8 @@
       },
       ...mapGetters([
         'fullScreen',
-        'playlist',
-        'sequenceList',
-        'currentSong',
         'playing',
-        'currentIndex',
-        'mode'
+        'currentIndex'
       ])
     },
     watch: {
@@ -266,9 +260,10 @@
           this.currentLyric.seek(0)
         }
       },
-      /* 歌曲准备好时，将songReady标志位设为true */
+      /* 歌曲准备好时，将songReady标志位设为true；同时将该歌曲保存到播放历史 */
       ready() {
         this.songReady = true
+        this.savePlayHistory(this.currentSong)
       },
       /* 当请求的歌曲url错误或网络异常，也将songReady标志位设为true，不然就无法切换上、下首歌曲 */
       error() {
@@ -304,28 +299,6 @@
         const minute = interval / 60 | 0
         const second = this._padTime(interval % 60)
         return `${minute}:${second}`
-      },
-      /* 每点击播放模式图标时，改变一次模式，并相应地修改当前播放列表 */
-      changeMode() {
-        const mode = (this.mode + 1) % 3
-        this.setPlayMode(mode)
-        let list = null
-        /* 当播放模式改为随机播放模式时，修改当前播放列表为随机播放列表，否则修改为顺序播放列表 */
-        if (mode === playMode.random) {
-          list = shuffle(this.playlist)
-        } else {
-          list = this.sequenceList
-        }
-        this.resetCurrentIndex(list)
-        this.setPlayList(list)
-      },
-      /* 当播放模式改为随机播放模式时，在随机播放列表中找到当前播放歌曲的索引，然后重置当前的歌曲索引，以保证当前播放歌曲不变 */
-      resetCurrentIndex(list) {
-        // findIndex方法是ES6中的数组方法
-        let index = list.findIndex((item) => {
-          return item.id === this.currentSong.id
-        })
-        this.setCurrentIndex(index)
       },
       /* 获取当前歌曲的歌词，并创建一个歌词对象 */
       getLyric() {
@@ -417,11 +390,7 @@
         this.$refs.middleL.style[transitionDuration] = `${time}ms`
       },
       ...mapMutations({
-        setFullScreen: 'SET_FULL_SCREEN',
-        setPlayingState: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX',
-        setPlayMode: 'SET_PLAY_MODE',
-        setPlayList: 'SET_PLAYLIST'
+        setFullScreen: 'SET_FULL_SCREEN'
       }),
       /* 以下是使用Vue过渡动画提供的JavaScript钩子写出的函数，
        * enter钩子函数定义并运行进入时cdWrapper元素的动画，并触发after-enter钩子 */
@@ -498,7 +467,10 @@
           len++
         }
         return num
-      }
+      },
+      ...mapActions([
+        'savePlayHistory'
+      ])
     },
     components: {
       ProgressBar,

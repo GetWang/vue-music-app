@@ -2,6 +2,8 @@ import storage from 'good-storage'
 
 const SEARCH_KEY = '__search__'       // 本地存储中搜索历史的key
 const SEARCH_MAX_LEN = 15             // 本地存储中搜索历史数据最大的个数
+const PLAY_KEY = '__play__'           // 本地存储中播放历史的key
+const PLAY_MAX_LEN = 100              // 本地存储中播放历史数据最大的个数
 
 /* 定义一个将数据插入数组中的方法（会查找数组中是否有该数据，可以限制数组的最大长度） */
 function insertToArray(arr, val, compare, maxLen) {
@@ -40,7 +42,7 @@ export function saveSearch(query) {
   return searches
 }
 
-/* 定义一个加载本地存储的搜索历史到store中的saveSearchHistory状态的方法 */
+/* 定义一个加载本地存储的搜索历史到store中的searchHistory状态的方法 */
 export function loadSearch() {
   return storage.get(SEARCH_KEY, [])
 }
@@ -59,4 +61,19 @@ export function deleteSearch(query) {
 export function clearSearch() {
   storage.remove(SEARCH_KEY)
   return []
+}
+
+/* 定义一个保存播放歌曲到播放历史中的方法 */
+export function savePlay(song) {
+  let songs = storage.get(PLAY_KEY, [])
+  insertToArray(songs, song, (item) => {
+    return item.id === song.id
+  }, PLAY_MAX_LEN)
+  storage.set(PLAY_KEY, songs)
+  return songs
+}
+
+/* 定义一个加载本地存储的播放历史到store中的playHistory状态的方法 */
+export function loadPlay() {
+  return storage.get(PLAY_KEY, [])
 }

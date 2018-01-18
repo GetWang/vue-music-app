@@ -36,6 +36,11 @@
       beforeScroll: {
         type: Boolean,
         default: false
+      },
+      // 可由外部控制scroll组件在data接口数据发生变化时延时刷新scroll组件高度的时间
+      refreshDelay: {
+        type: Number,
+        default: 20
       }
     },
     mounted() {
@@ -93,7 +98,7 @@
       data() {
         setTimeout(() => {
           this.refresh()
-        }, 20)
+        }, this.refreshDelay)
       }
     }
   }

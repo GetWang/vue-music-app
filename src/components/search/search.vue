@@ -4,7 +4,8 @@
       <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
     <div ref="shortcutWrapper" class="shortcut-wrapper" v-show="!query">
-      <scroll ref="shortcut" class="shortcut" :data="shortcut">
+      <scroll ref="shortcut" class="shortcut"
+              :data="shortcut" :refreshDelay="refreshDelay">
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -43,26 +44,23 @@
   import Scroll from 'base/scroll/scroll'
   import { getHotKey } from 'api/search'
   import { ERR_OK } from 'api/config'
-  import { mapActions, mapGetters } from 'vuex'
-  import { playlistMixin } from 'common/js/mixin'
+  import { mapActions } from 'vuex'
+  import { playlistMixin, searchMixin } from 'common/js/mixin'
 
   export default {
     data() {
       return {
-        hotKey: [],
-        query: ''
+        hotKey: []
       }
     },
-    mixins: [playlistMixin],
+    /* 使用了跟搜索相关的混合，即和添加歌曲组件共用了搜索相关的逻辑 */
+    mixins: [playlistMixin, searchMixin],
     computed: {
       /* 将热门搜索数据和搜索历史数据连接起来传入scroll
          组件的data接口，让其在数据发生变化时刷新高度 */
       shortcut() {
         return this.hotKey.concat(this.searchHistory)
-      },
-      ...mapGetters([
-        'searchHistory'
-      ])
+      }
     },
     created() {
       this._getHotKey()
@@ -78,21 +76,6 @@
       }
     },
     methods: {
-      /* 点击热门搜索词后，设置搜索框的query */
-      addQuery(query) {
-        this.$refs.searchBox.setQuery(query)
-      },
-      onQueryChange(query) {
-        this.query = query
-      },
-      /* 搜索结果列表将要滚动时，让输入框失去焦点 */
-      blurInput() {
-        this.$refs.searchBox.blur()
-      },
-      /* 保存搜索词 */
-      saveSearch() {
-        this.saveSearchHistory(this.query)
-      },
       /* 点击搜索历史的清空按钮时，显示弹窗 */
       showConfirm() {
         this.$refs.confirm.show()
@@ -115,8 +98,6 @@
         })
       },
       ...mapActions([
-        'saveSearchHistory',
-        'deleteSearchHistory',
         'clearSearchHistory'
       ])
     },

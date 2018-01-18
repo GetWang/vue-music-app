@@ -4,14 +4,15 @@
       <div class="list-wrapper" @click.stop>
         <div class="list-header">
           <h1 class="title">
-            <i class="icon"></i>
-            <span class="text"></span>
+            <i class="icon" :class="iconMode" @click="changeMode"></i>
+            <span class="text">{{modeText}}</span>
             <span class="clear" @click="showConfirm">
               <i class="icon-clear"></i>
             </span>
           </h1>
         </div>
-        <scroll ref="listContent" class="list-content" :data="sequenceList">
+        <scroll ref="listContent" class="list-content"
+                :data="sequenceList" :refreshDelay="refreshDelay">
           <transition-group name="list" tag="ul">
             <li :key="item.id" ref="listItem" class="item" v-for="(item, index) in sequenceList" @click="selectItem(item, index)">
               <i class="current" :class="getCurrentIcon(item)"></i>
@@ -26,7 +27,7 @@
           </transition-group>
         </scroll>
         <div class="list-operate">
-          <div class="add">
+          <div class="add" @click="showAddSong">
             <i class="icon-add"></i>
             <span class="text">添加歌曲到队列</span>
           </div>
@@ -36,6 +37,7 @@
         </div>
       </div>
       <confirm ref="confirm" title="是否清空播放列表" @confirm="confirmClear"></confirm>
+      <add-song ref="addSong"></add-song>
     </div>
   </transition>
 </template>
@@ -43,22 +45,26 @@
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
   import Confirm from 'base/confirm/confirm'
-  import { mapGetters, mapMutations, mapActions } from 'vuex'
+  import AddSong from 'components/add-song/add-song'
+  import { mapActions } from 'vuex'
   import { playMode } from 'common/js/config'
+  import { playerMixin } from 'common/js/mixin'
 
   export default {
     data() {
       return {
-        showFlag: false
+        showFlag: false,
+        /* 当scroll组件data接口数据发生变化时延时刷新scroll组件的延时时间（因为scroll组件内使用了列表过渡） */
+        refreshDelay: 120
       }
     },
+    /* 使用了跟播放模式相关的混合，即和播放器共用了播放模式相关的逻辑 */
+    mixins: [playerMixin],
     computed: {
-      ...mapGetters([
-        'sequenceList',
-        'playlist',
-        'currentSong',
-        'mode'
-      ])
+      // 播放模式文字
+      modeText() {
+        return this.mode === playMode.random ? '随机播放' : (this.mode === playMode.loop ? '单曲循环' : '顺序播放')
+      }
     },
     watch: {
       /* 当前播放歌曲发生变化且歌曲播放列表显示时，滚动到当前播放歌曲 */
@@ -123,10 +129,10 @@
         })
         this.$refs.listContent.scrollToElement(this.$refs.listItem[index], 300)
       },
-      ...mapMutations({
-        setCurrentIndex: 'SET_CURRENT_INDEX',
-        setPlayingState: 'SET_PLAYING_STATE'
-      }),
+      /* 显示添加歌曲组件 */
+      showAddSong() {
+        this.$refs.addSong.show()
+      },
       ...mapActions([
         'deleteSong',
         'clearSongList'
@@ -134,7 +140,8 @@
     },
     components: {
       Scroll,
-      Confirm
+      Confirm,
+      AddSong
     }
   }
 </script>
