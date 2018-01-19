@@ -66,7 +66,7 @@
               <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon-not-favorite"></i>
+              <i :class="getFavoriteIcon(currentSong)" @click="toggleFavorite(currentSong)"></i>
             </div>
           </div>
         </div>
@@ -344,6 +344,8 @@
         /* 因为播放器中部有歌词列表且它能够在Y轴方向上滚动，
            所以在中部滚动时，若垂直滚动的距离大于水平滚动的距离，就忽略水平滚动 */
         if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          // 自己修复一个滚动歌词时，会自动滑到CD界面的bug
+          this.touch.percent = undefined
           return
         }
         // left表示歌词列表左边缘相对于屏幕右边缘的距离
@@ -661,6 +663,8 @@
               font-size: 40px
           .i-right
             text-align: left
+            .icon-favorite
+              color: $color-sub-theme
     .mini-player
       position: fixed
       left: 0
