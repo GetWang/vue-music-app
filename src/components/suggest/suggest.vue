@@ -115,7 +115,6 @@
           if (res.code === ERR_OK) {
             this.result = this._genResult(res.data)
             this._checkMore(res.data)
-            console.log(res.data)
           }
         })
       },
@@ -129,7 +128,6 @@
           if (res.code === ERR_OK) {
             this.result = this.result.concat(this._genResult(res.data))
             this._checkMore(res.data)
-            console.log(res.data)
           }
         })
       },

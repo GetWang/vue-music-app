@@ -93,7 +93,6 @@
         getHotKey().then((res) => {
           if (res.code === ERR_OK) {
             this.hotKey = res.data.hotkey.slice(0, 10)
-            console.log(res.data.hotkey)
           }
         })
       },
