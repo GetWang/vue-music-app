@@ -1,9 +1,8 @@
 {
-  "name": "vue-music",
+  "name": "vue-music-app",
   "version": "1.0.0",
-  "description": "Vue音乐播放器",
+  "description": "Vue 移动端音乐 WebApp",
   "author": "GetWang <wang_dresimap@qq.com>",
-  "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",

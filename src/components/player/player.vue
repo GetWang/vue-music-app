@@ -589,7 +589,7 @@
               height: 20px
               font-size: $font-size-medium
               line-height: 20px
-              color: $color-text
+              color: $color-theme
         .middle-r
           display: inline-block
           width: 100%
@@ -606,7 +606,7 @@
               line-height: 32px
               color: $color-text-l
               &.current
-                color: $color-text
+                color: $color-theme
       .bottom
         position: absolute
         bottom: 50px

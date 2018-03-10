@@ -36,10 +36,7 @@ export function getDiscList() {
 
 /* 抓取歌单详情数据 */
 export function getDiscDetail(disstid) {
-  /* 这样获取不到数据，好像还是访问接口受限
   const url = '/api/getDiscDetail'
-   */
-  const url = 'http://ustbhuangyi.com/music/api/getCdInfo'
   const data = Object.assign({}, commonParams, {
     disstid,
     type: 1,
@@ -50,12 +47,9 @@ export function getDiscDetail(disstid) {
     platform: 'yqq',
     needNewCode: 0
   })
-  return jsonp(url, data, options)
-  /* 这样获取不到数据，好像还是访问接口受限
   return axios.get(url, {
     params: data
   }).then((res) => {
     return Promise.resolve(res.data)
   })
-   */
 }

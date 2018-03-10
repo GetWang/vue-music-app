@@ -40,11 +40,11 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         })
       })
       /* 获取歌手详情页面歌曲的歌词数据 */
-      app.get('/api/lyric', function(req, res) {
+      app.get('/api/lyric', function (req, res) {
         const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
         axios.get(url, {
           headers: {
-            referer: 'https://c.y.qq.com',
+            referer: 'https://c.y.qq.com/',
             host: 'c.y.qq.com'
           },
           params: req.query
@@ -65,11 +65,11 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         })
       })
       /* 获取歌单详情页面数据 */
-      app.get('/api/getDiscDetail', function(req, res) {
+      app.get('/api/getDiscDetail', function (req, res) {
         const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
         axios.get(url, {
           headers: {
-            referer: 'https://c.y.qq.com',
+            referer: 'https://c.y.qq.com/',
             host: 'c.y.qq.com'
           },
           params: req.query
