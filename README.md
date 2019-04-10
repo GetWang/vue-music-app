@@ -1,10 +1,10 @@
 # vue-music-app
 
-#### Vue 移动端音乐 WebApp
+> 在线演示：[Vue 移动端音乐 WebApp](http://120.76.61.79:9000)
 
 ## Description
 
-- 使用`Vue2.x`、`Vuex`、`Vue-Router`、`ES6`、`Webpack`、`Stylus`技术栈。其中 Webpack 的大部分配置使用`vue-cli`脚手架完成。
+- 使用`Vue 2.x`、`Vuex`、`Vue-Router`、`ES6`、`Webpack`、`Stylus`技术栈。其中 Webpack 的大部分配置使用`vue-cli`脚手架完成。
 
 - 该应用的`UI`基本仿照移动端QQ音乐的用户界面，实际体验非常逼近移动端原生音乐类 App。
 
@@ -44,7 +44,10 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 
 
 ## About me
-源代码地址：>>[GitHub](https://github.com/GetWang/vue-music-app)
-个人网站：[GetWang' Blog](https://getwang.github.io/)
-GitHub：[GetWang](https://github.com/GetWang)
-My resume：[Resume-of-GetWang](https://getwang.github.io/Resume-of-GetWang/)
+- 源代码地址：>>[GitHub](https://github.com/GetWang/vue-music-app)
+
+- 个人博客：[GetWang' Blog](https://getwang.github.io/)
+
+- GitHub：[GetWang](https://github.com/GetWang)
+
+- My resume：[Resume-of-GetWang](https://getwang.github.io/Resume-of-GetWang/)
