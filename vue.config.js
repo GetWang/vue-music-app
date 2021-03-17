@@ -9,8 +9,10 @@ function resolve (dir) {
 module.exports = {
   devServer: {
     before (app) {
+      /* 获取推荐页面歌单列表数据 */
       app.get('/api/getDiscList', function (req, res) {
         const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
+        // 通过axios向目标服务器发送HTTP请求，获取歌单数据
         axios.get(url, {
           headers: {
             referer: 'https://c.y.qq.com/',
@@ -18,13 +20,16 @@ module.exports = {
           },
           params: req.query
         }).then((response) => {
+          // response是从目标服务器返回的带有HTTP响应头部数据和实际请求的歌单数据的一个对象
+          /* response.data是实际请求的歌单数据的一个对象，调用res.json()是将response.data转化成JSON数据格式，并作为
+             res返回。res是要返回给浏览器的响应数据，是一个带有HTTP响应头部数据和实际请求的歌单数据的对象 */
           res.json(response.data)
         }).catch((e) => {
           console.log(e)
         })
       })
 
-      app.get('/api/getCdInfo', function (req, res) {
+      app.get('/api/getDiscDetail', function (req, res) {
         const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
         axios.get(url, {
           headers: {
@@ -47,6 +52,7 @@ module.exports = {
         })
       })
 
+      /* 获取歌手详情页面歌曲的歌词数据 */
       app.get('/api/lyric', function (req, res) {
         const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
 
@@ -58,6 +64,8 @@ module.exports = {
           params: req.query
         }).then((response) => {
           let ret = response.data
+          /* 如果ret是一个JSONP形式的数据，即一个回调函数包裹实际
+             数据的字符串，则从中提取出有效数据，并解析成对象 */
           if (typeof ret === 'string') {
             const reg = /^\w+\(({.+})\)$/
             const matches = ret.match(reg)
