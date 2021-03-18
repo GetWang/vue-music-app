@@ -1,6 +1,6 @@
 # vue-music-app
 
-> 在线演示：[Vue 移动端音乐 WebApp](http://120.76.61.79:9000)
+> 在线演示：[Vue 移动端音乐 WebApp](https://getwang.github.io/music-app/)
 
 ## Description
 
